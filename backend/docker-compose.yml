@@ -1,0 +1,32 @@
+version: '3.1'
+services:
+  mongodb:
+    container_name: mongodb
+    image: 'bitnami/mongodb:6.0.6-debian-11-r2'
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${ROOT_USERNAME_KEY}
+      MONGO_INITDB_ROOT_PASSWORD: ${ROOT_PASSWORD_KEY}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+  mongo-express:
+    container_name: mongo-express
+    image: mongo-express:1.0.0-alpha.4
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017
+  backend:
+    container_name: backend
+    build: . # Dockerfile location
+    ports:
+      - 8080:4000 # forward the internal port 8080 to the host's port 8080
+    depends_on:
+      - mongodb # ensure the app service runs after mongodb service
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017 # provide the database URL to your app
+volumes:
+  mongodb_data_container:
